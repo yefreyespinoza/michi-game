@@ -1,0 +1,175 @@
+import React from "react";
+import { Socket } from "socket.io-client";
+
+export interface PieceInter {
+  idPlayer: string;
+  pieceId: string;
+  boxId: string;
+}
+//interface for game
+export interface Row {
+  id?: string;
+  select: string;
+  color?: string;
+}
+export interface MovementInter extends Row {
+  boxId: string;
+  playerId?: string;
+}
+export interface PaletColorInt {
+  id: string;
+  color: string;
+  selected: boolean;
+  canSelect: boolean;
+}
+export interface MovementProps {
+  colorPalet: PaletColorInt[];
+  items: Row[];
+}
+
+export class michiGame {
+  items: Row[];
+  colorPalet: PaletColorInt[];
+  constructor() {
+    this.start = this.start.bind(this);
+    this.startMovement = this.startMovement.bind(this);
+    this.changeColor = this.changeColor.bind(this);
+    this.colorPaletSwitch = this.colorPaletSwitch.bind(this);
+    this.icanSelect = this.icanSelect.bind(this);
+    this.selectColor = this.selectColor.bind(this);
+    this.insertColor = this.insertColor.bind(this);
+    this.sendMovement = this.sendMovement.bind(this);
+    this.sendNewMovement = this.sendNewMovement.bind(this);
+    this.insertMovement = this.insertMovement.bind(this);
+    this.win = this.win.bind(this);
+    this.colorPalet = [
+      { id: "1", color: "#5ac", selected: false, canSelect: true },
+      { id: "2", color: "#5ac", selected: false, canSelect: true },
+      { id: "3", color: "#5ac", selected: false, canSelect: true },
+    ];
+    this.items = [
+      //state 0 select = blank state
+      { id: "1", color: this.color(), select: "0" },
+      { id: "2", color: this.color(), select: "0" },
+      { id: "3", color: this.color(), select: "0" },
+      { id: "4", color: this.color(), select: "0" },
+      { id: "5", color: this.color(), select: "0" },
+      { id: "6", color: this.color(), select: "0" },
+      { id: "7", color: this.color(), select: "0" },
+      { id: "8", color: this.color(), select: "0" },
+      { id: "9", color: this.color(), select: "0" },
+    ];
+  }
+
+  start() {
+    console.log("game started in auto");
+  }
+  colorPaletSwitch(select: number) {
+    switch (select) {
+      case 0:
+        return "#5ac";
+      case 1:
+        return "#7ff";
+      case 2:
+        return "#346";
+      default:
+        return "#5ac";
+    }
+  }
+  color(selectState?: string): string {
+    switch (selectState) {
+      case "0":
+        return "#fff";
+      case "1":
+        return "#5ac";
+      case "2":
+        return "#faf";
+      case "3":
+        return "#7ff";
+      default:
+        return "#fff";
+    }
+  }
+  startMovement() {
+    return (
+      this.colorPalet[0].canSelect ||
+      this.colorPalet[1].canSelect ||
+      this.colorPalet[2].canSelect
+    );
+  }
+  changeColor(selectState: string): string {
+    return this.color(selectState);
+  }
+
+  icanSelect(id: string) {
+    let item = this.colorPalet.find((item) => {
+      return item.id === id;
+    });
+    let canSelect = item?.canSelect;
+    return canSelect;
+  }
+  selectColor(e: React.MouseEvent<HTMLDivElement, MouseEvent>) {
+    let id = e.currentTarget.id;
+    let icanSelect = this.icanSelect(id);
+    if (icanSelect) {
+      let circle = this.colorPalet.map((item) => {
+        item.id !== id && (item.selected = false);
+        item.id === id && (item.selected = !item.selected);
+        return item;
+      });
+      return circle;
+    }
+  }
+  sendMovement(eventName: string, socket: Socket, piece: PieceInter) {
+    socket.emit(eventName, piece);
+  }
+  sendNewMovement(eventName: string, socket: Socket, piece?: MovementInter) {
+    socket.emit(eventName, piece);
+  }
+
+  insertColor(
+    selected: boolean,
+    socket: Socket,
+    id: string,
+    idCircle: string,
+    idPlayer: string
+  ) {
+    let piece: PieceInter = {
+      idPlayer: idPlayer,
+      boxId: id,
+      pieceId: idCircle,
+    };
+    if (selected) {
+      this.sendMovement("send-piece", socket, piece);
+    }
+    return;
+  }
+
+  selectMovement(id: string): Row[] {
+    return this.items.map((item) => {
+      if (item.id === id) {
+        if (item.select === "1") {
+          item.color = this.changeColor((item.select = "3"));
+        } else if (item.select === "3") {
+          item.color = this.changeColor((item.select = "1"));
+        }
+      }
+      if (item.select === "3" && item.id !== id) {
+        item.select = "1";
+        item.color = this.changeColor(item.select);
+      }
+      return item;
+    });
+  }
+
+  insertMovement(id: string, socket: Socket, piece: MovementInter) {
+    this.items.map((item) => {
+      if (item.id === id && item.select === "0") {
+        this.sendNewMovement("send-new-piece", socket, piece);
+      }
+      return item;
+    });
+  }
+
+  win(items: Row[]) {}
+}

@@ -1,0 +1,46 @@
+.template-container {
+  display: block;
+  position: relative;
+  width: 95%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-group > * {
+  margin: 5px 0 5px 0;
+}
+.form-control {
+  border: 1px solid #000;
+}
+.title-1 {
+  margin: 10px 0;
+}
+.btn {
+  position: relative;
+  background: linear-gradient(#fdf, #faf);
+  border: 2px solid #faf;
+  font-weight: bolder;
+  left: 50%;
+  transform: translate(-50%);
+}
+
+@media screen and (min-width: 500px) {
+  .template-container {
+    width: 80%;
+  }
+}
+
+@media screen and (min-width: 900px) {
+  .template-container {
+    width: 50%;
+  }
+}
+
+@media screen and (min-width: 1300px) {
+  .template-container {
+    width: 40%;
+  }
+}

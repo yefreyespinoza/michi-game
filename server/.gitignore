@@ -1,0 +1,5 @@
+/node_modules
+.http
+/dist1
+yarn.lock
+tsconfig.json
